@@ -3,14 +3,6 @@ from uu import decode
 save_value_change = 3
 
 
-def remove_bad_increment(_values):
-    fixed_counter = 0
-    new_values = []
-    for value in _values:
-        new_values.append(value)
-        if len(new_values) == 0:
-            continue
-
 def get_value_stats(_values):
     increments = 0
     decrements = 0
@@ -61,52 +53,27 @@ def get_value_stats(_values):
     return {'increments': increments, 'decrements': decrements, 'equals': equals, 'too_steep': too_steep, 'value_info': value_categories}
 
 
-def all_increment(_values):
-    last_value = -1
-    for value in _values:
-        # first item
-        if last_value == -1:
-            last_value = value
-            continue
+def stats_save(_value_stats):
+    too_steep = _value_stats['too_steep']
+    equals = _value_stats['equals']
+    increments = _value_stats['increments']
+    decrements = _value_stats['decrements']
 
-        if last_value == value:
-            return False
+    if too_steep > 2:
+        return False
 
-        if last_value > value:
-            return False
+    if equals > 2:
+        return False
 
-        last_value = value
+    max_value = max(increments, decrements)
+    min_value = min(increments, decrements)
 
-    return True
+    difference = max_value - (max_value - min_value)
 
-
-def all_decrement(_values):
-    last_value = -1
-    for value in _values:
-        # first item
-        if last_value == -1:
-            last_value = value
-            continue
-
-        if last_value == value:
-            return False
-
-        if last_value < value:
-            return False
-
-        last_value = value
+    if difference > 1:
+        return False
 
     return True
-
-
-def is_change_save(_values):
-    errors = 0
-    for i in range(1, len(_values)):
-        difference = abs(_values[i] - _values[i - 1])
-        if difference > save_value_change:
-            errors += 1
-
-    return errors <= 1
 
 
 amount_save_reports = 0
@@ -117,15 +84,13 @@ for row in open('data_1_example.txt').readlines():
     for part in parts:
         values.append(int(part.strip()))
 
-    print(get_value_stats(values))
+    value_stats = get_value_stats(values)
+    print(values, ' | ', get_value_stats(values))
 
     #if not all_increment(values):
         #values = remove_bad_increment(values)
 
-    if not all_increment(values) and not all_decrement(values):
-        continue
-
-    if is_change_save(values):
+    if stats_save(value_stats):
         #print(parts)
         amount_save_reports += 1
 
