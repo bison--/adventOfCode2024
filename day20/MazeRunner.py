@@ -22,7 +22,7 @@ class MazeRunner:
         self.found_path = self.astar.search(self.current_position, self.target_position)
         if self.found_path:
             #print("Path found:", path)
-            print("Path Steps:", self.get_path_score())
+            print("Path Steps:", self.get_path_steps())
         else:
             print("No path found")
 
