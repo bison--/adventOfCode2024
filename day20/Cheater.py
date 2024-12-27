@@ -7,12 +7,21 @@ class Cheater:
     CHEAT_DIRECTION_X = 1
     CHEAT_DIRECTION_Y = 2
 
+    class CheaterStats:
+        def __init__(self, steps, base_steps):
+            self.steps = steps
+            self.base_steps = base_steps
+            self.improvement = self.get_improvement()
+
+        def get_improvement(self):
+            return self.base_steps - self.steps
+
     def __init__(self, map_file="map1.txt"):
         self.maze: Maze = Maze(map_file)
 
         self.maze_runner = MazeRunner(self.maze)
         self.baseline_steps = 0
-        self.stats = {}
+        self.stats: list[Cheater.CheaterStats] = []
 
     def run_cheater(self):
         self.maze_runner.run()
@@ -40,15 +49,25 @@ class Cheater:
                     # the cheat itself cost 2 steps
                     steps += 2
 
-                    if steps < self.baseline_steps:
-                        if steps not in self.stats:
-                            self.stats[steps] = 0
-                            self.maze_runner.print_path()
+                    if steps >= self.baseline_steps:
+                        continue
 
-                        self.stats[steps] += 1
+                    if steps == 22:
+                        self.maze_runner.print_path(True)
+
+                    self.stats.append(
+                        Cheater.CheaterStats(
+                            steps,
+                            self.baseline_steps
+                    ))
 
     def cheat(self, cheat_position_x, cheat_position_y, cheat_direction):
         self.maze.reset_map_data()
+
+        # borders do not affect the walk-cycle
+        if self.maze.is_border(cheat_position_x, cheat_position_y):
+            return False
+
         if not self._has_walkable_nearby(cheat_position_x, cheat_position_y):
             return False
 
@@ -80,11 +99,17 @@ class Cheater:
         print("Baseline steps:", self.baseline_steps)
         print("Stats:")
 
-        for steps in sorted(self.stats.keys()):
-            print(f"Improvement: {self.baseline_steps - steps}  Steps: {steps}, count: {self.stats[steps]}")
+        self.stats.sort(key=lambda _stat: _stat.improvement)
+
+        grouped = {}
+        for stat in self.stats:
+            print(f"Improvement: {stat.improvement}  Steps: {stat.steps}, count: -")
+            if stat.improvement not in grouped:
+                grouped[stat.improvement] = 0
+            grouped[stat.improvement] += 1
 
         print("#" * 20)
 
-        for steps in sorted(self.stats.keys()):
-            print(f"There are {self.stats[steps]} cheats that save {self.baseline_steps - steps} picoseconds")
+        for steps in sorted(grouped.keys()):
+            print(f"There are {grouped[steps]} cheats that save {steps} picoseconds")
 

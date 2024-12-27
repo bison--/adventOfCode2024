@@ -31,6 +31,7 @@ class Maze:
 
     def reset_map_data(self):
         # TODO: maybe a simple "copy" would be sufficient
+        self.data_rows = []
 
         row_index = -1
         for line in self.file_rows:
@@ -47,6 +48,9 @@ class Maze:
 
             row_blocks = list(line)
             self.data_rows.append(row_blocks)
+
+    def is_border(self, x, y):
+        return x == 0 or y == 0 or x == self.get_width() - 1 or y == self.get_height() - 1
 
     def can_walk(self, x, y):
         if not self.is_on_map(x, y):
