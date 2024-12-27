@@ -3,6 +3,7 @@ from MazeRunner import MazeRunner
 
 
 class Cheater:
+    CHEAT_DIRECTION_NONE = 0
     CHEAT_DIRECTION_X = 1
     CHEAT_DIRECTION_Y = 2
 
@@ -28,7 +29,7 @@ class Cheater:
                 current_index += 1
                 print(f"Running cheater {current_index}/{total_cheats}")
 
-                for cheat_direction in [self.CHEAT_DIRECTION_X, self.CHEAT_DIRECTION_Y]:
+                for cheat_direction in [self.CHEAT_DIRECTION_NONE]:
                     self.maze.reset_map_data()
                     if not self.cheat(x, y, cheat_direction):
                         continue
@@ -36,9 +37,14 @@ class Cheater:
                     self.maze_runner.run()
                     steps = self.maze_runner.get_path_steps()
 
+                    # the cheat itself cost 2 steps
+                    steps += 2
+
                     if steps < self.baseline_steps:
                         if steps not in self.stats:
                             self.stats[steps] = 0
+                            self.maze_runner.print_path()
+
                         self.stats[steps] += 1
 
     def cheat(self, cheat_position_x, cheat_position_y, cheat_direction):
@@ -76,4 +82,9 @@ class Cheater:
 
         for steps in sorted(self.stats.keys()):
             print(f"Improvement: {self.baseline_steps - steps}  Steps: {steps}, count: {self.stats[steps]}")
+
+        print("#" * 20)
+
+        for steps in sorted(self.stats.keys()):
+            print(f"There are {self.stats[steps]} cheats that save {self.baseline_steps - steps} picoseconds")
 

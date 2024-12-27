@@ -16,7 +16,7 @@ class MazeRunner:
         if not self.found_path:
             return -1
 
-        return len(self.found_path)
+        return len(self.found_path) - 1  # start should not count as a step
 
     def run(self):
         self.found_path = self.astar.search(self.current_position, self.target_position)
